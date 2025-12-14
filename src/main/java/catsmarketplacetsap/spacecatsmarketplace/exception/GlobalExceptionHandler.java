@@ -1,5 +1,6 @@
 package catsmarketplacetsap.spacecatsmarketplace.exception;
 
+import catsmarketplacetsap.spacecatsmarketplace.service.exception.FeatureNotAvailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(FeatureNotAvailableException.class)
+    public ResponseEntity<ErrorResponse> handleFeatureException(
+            FeatureNotAvailableException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error("Service Unavailable")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
@@ -22,7 +38,7 @@ public class GlobalExceptionHandler {
                 .orElse("Validation error");
 
         ErrorResponse error = ErrorResponse.builder()
-                .status(400)
+                .status(HttpStatus.BAD_REQUEST.value())
                 .error("Bad Request")
                 .message(message)
                 .path(request.getRequestURI())
@@ -42,7 +58,7 @@ public class GlobalExceptionHandler {
                 .orElse("Validation error");
 
         ErrorResponse error = ErrorResponse.builder()
-                .status(400)
+                .status(HttpStatus.BAD_REQUEST.value())
                 .error("Bad Request")
                 .message(message)
                 .path(request.getRequestURI())
@@ -57,7 +73,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         ErrorResponse error = ErrorResponse.builder()
-                .status(404)
+                .status(HttpStatus.NOT_FOUND.value())
                 .error("Not Found")
                 .message(ex.getMessage())
                 .path(request.getRequestURI())

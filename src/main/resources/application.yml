@@ -6,3 +6,7 @@ spring:
 springdoc:
   swagger-ui:
     url: /api-specs/product-api-specs.yml
+feature:
+  toggles:
+    cosmoCats: true
+    kittyProducts: false
