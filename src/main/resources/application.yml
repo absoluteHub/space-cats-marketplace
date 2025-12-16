@@ -3,6 +3,17 @@ spring:
     name: space-cats-marketplace
   profiles:
     active: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/spacemarket
+    username: bestuser
+    password: bestuser
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  liquibase:
+    change-log: classpath:liquibase/changelog.yaml
 springdoc:
   swagger-ui:
     url: /api-specs/product-api-specs.yml
@@ -10,3 +21,4 @@ feature:
   toggles:
     cosmoCats: true
     kittyProducts: false
+    spring:

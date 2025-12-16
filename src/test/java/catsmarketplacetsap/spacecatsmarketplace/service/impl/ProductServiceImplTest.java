@@ -1,104 +1,57 @@
 package catsmarketplacetsap.spacecatsmarketplace.service.impl;
 
-import catsmarketplacetsap.spacecatsmarketplace.domain.Product;
+import catsmarketplacetsap.spacecatsmarketplace.dto.CategoryDto;
 import catsmarketplacetsap.spacecatsmarketplace.dto.ProductDto;
-import catsmarketplacetsap.spacecatsmarketplace.mapper.ProductMapper;
-import catsmarketplacetsap.spacecatsmarketplace.repository.ProductRepository;
-import org.junit.jupiter.api.BeforeEach;
+import catsmarketplacetsap.spacecatsmarketplace.integration.AbstractIntegrationTest;
+import catsmarketplacetsap.spacecatsmarketplace.service.CategoryService;
+import catsmarketplacetsap.spacecatsmarketplace.service.ProductService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+@Transactional
+@DisplayName("Product Service Integration Test")
+class ProductServiceImplTest extends AbstractIntegrationTest {
 
-@ExtendWith(MockitoExtension.class)
-class ProductServiceImplTest {
+    @Autowired
+    private ProductService productService;
 
-    @Mock
-    private ProductRepository productRepository;
+    @Autowired
+    private CategoryService categoryService;
 
-    @Mock
-    private ProductMapper mapper;
+    @Test
+    @DisplayName("Should add, update and delete a product")
+    void testProductLifecycle() {
+        CategoryDto category = categoryService.save(new CategoryDto(null, "Equipment", "tools"));
 
-    @InjectMocks
-    private ProductServiceImpl productService;
-
-    private Product product;
-    private ProductDto productDto;
-
-    @BeforeEach
-    void setUp() {
-        product = new Product();
-        product.setId(1L);
-
-        productDto = new ProductDto(
-                1L,
-                "Cosmic star product",
-                "Test description",
-                100.0
+        ProductDto newProduct = new ProductDto(
+                null,
+                "Space Helmet",
+                "High-quality helmet",
+                250.5
         );
-    }
 
-    @Test
-    @DisplayName("findAll should return list of ProductDto")
-    void findAll_shouldReturnDtos() {
-        when(productRepository.findAll()).thenReturn(List.of(product));
-        when(mapper.toDto(product)).thenReturn(productDto);
+        ProductDto added = productService.save(newProduct);
+        assertThat(added.getId()).isNotNull();
+        assertThat(added.getName()).isEqualTo("Space Helmet");
 
-        List<ProductDto> result = productService.findAll();
+        ProductDto updateData = new ProductDto(
+                added.getId(),
+                "Updated Helmet",
+                "New description",
+                300.0
+        );
 
-        assertEquals(1, result.size());
-        verify(productRepository).findAll();
-    }
+        ProductDto updated = productService.update(added.getId(), updateData);
+        assertThat(updated.getName()).isEqualTo("Updated Helmet");
+        assertThat(updated.getPrice()).isEqualTo(300.0);
 
-    @Test
-    @DisplayName("findById should return product dto")
-    void findById_shouldReturnDto() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(mapper.toDto(product)).thenReturn(productDto);
+        productService.deleteById(added.getId());
 
-        ProductDto result = productService.findById(1L);
-
-        assertNotNull(result);
-        verify(productRepository).findById(1L);
-    }
-
-    @Test
-    @DisplayName("findById should throw when product not found")
-    void findById_shouldThrow() {
-        when(productRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class,
-                () -> productService.findById(1L));
-    }
-
-    @Test
-    @DisplayName("save should persist product")
-    void save_shouldPersist() {
-        when(mapper.toEntity(productDto)).thenReturn(product);
-        when(mapper.toDto(product)).thenReturn(productDto);
-
-        ProductDto result = productService.save(productDto);
-
-        assertNotNull(result);
-        verify(productRepository).save(product);
-    }
-
-    @Test
-    @DisplayName("deleteById should delete when exists")
-    void deleteById_shouldDelete() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-
-        productService.deleteById(1L);
-
-        verify(productRepository).deleteById(1L);
+        assertThrows(RuntimeException.class, () -> productService.findById(added.getId()));
     }
 }
-
