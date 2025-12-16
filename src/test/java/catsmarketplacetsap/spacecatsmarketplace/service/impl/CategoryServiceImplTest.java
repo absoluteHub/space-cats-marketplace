@@ -6,6 +6,7 @@ import catsmarketplacetsap.spacecatsmarketplace.service.CategoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @DisplayName("Category Service Integration Test")
+@WithMockUser(username = "admin", roles = {"ADMIN"})
 class CategoryServiceImplTest extends AbstractIntegrationTest {
 
     @Autowired

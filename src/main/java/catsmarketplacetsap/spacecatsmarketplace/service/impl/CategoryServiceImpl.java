@@ -6,6 +6,7 @@ import catsmarketplacetsap.spacecatsmarketplace.repository.CategoryRepository;
 import catsmarketplacetsap.spacecatsmarketplace.repository.entity.CategoryEntity;
 import catsmarketplacetsap.spacecatsmarketplace.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<CategoryDto> findAll() {
         return categoryRepository.findAll().stream()
                 .map(categoryMapper::toDto)
@@ -28,6 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public CategoryDto findById(Long id) {
         CategoryEntity entity = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
@@ -36,6 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public CategoryDto save(CategoryDto categoryDto) {
         CategoryEntity entity = categoryMapper.toEntity(categoryDto);
         CategoryEntity savedEntity = categoryRepository.save(entity);
@@ -44,6 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteById(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new RuntimeException("Category not found with id: " + id);

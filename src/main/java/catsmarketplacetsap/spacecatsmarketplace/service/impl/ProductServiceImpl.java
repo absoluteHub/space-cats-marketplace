@@ -6,6 +6,7 @@ import catsmarketplacetsap.spacecatsmarketplace.repository.ProductRepository;
 import catsmarketplacetsap.spacecatsmarketplace.repository.entity.ProductEntity;
 import catsmarketplacetsap.spacecatsmarketplace.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<ProductDto> findAll() {
         return productRepository.findAll().stream()
                 .map(mapper::toDto)
@@ -28,6 +30,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ProductDto findById(Long id) {
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -36,6 +39,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductDto save(ProductDto productDto) {
         ProductEntity entity = mapper.toEntity(productDto);
         ProductEntity savedEntity = productRepository.save(entity);
@@ -44,6 +48,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductDto update(Long id, ProductDto productDto) {
         ProductEntity existing = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -58,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteById(Long id) {
         if (!productRepository.existsById(id)) {
             throw new RuntimeException("Product not found with id: " + id);
