@@ -1,69 +1,78 @@
 package catsmarketplacetsap.spacecatsmarketplace.view.controllers;
 
+import catsmarketplacetsap.spacecatsmarketplace.dto.CategoryDto;
 import catsmarketplacetsap.spacecatsmarketplace.dto.ProductDto;
+import catsmarketplacetsap.spacecatsmarketplace.integration.AbstractIntegrationTest;
+import catsmarketplacetsap.spacecatsmarketplace.service.CategoryService;
 import catsmarketplacetsap.spacecatsmarketplace.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
 @AutoConfigureMockMvc
-@DisplayName("Product Controller Integration Tests")
-class ProductControllerIT {
+class ProductControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockitoBean
     private ProductService productService;
 
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private static final String API_KEY_HEADER = "X-COSMO-KEY";
+    private static final String API_KEY_VALUE = "meow-secret-key-123";
+
     @Test
-    @DisplayName("GET /api/v1/products returns list")
-    void getAllProducts_ok() throws Exception {
-        ProductDto dto = new ProductDto(
-                1L,
-                "Cosmic star toy",
-                "Nice toy",
-                10.0
-        );
+    @DisplayName("GET /products")
+    void shouldReturnAllProducts() throws Exception {
+        CategoryDto category = categoryService.save(new CategoryDto(null, "Food", "yummy"));
+        ProductDto product = new ProductDto(null, "Space Tuna", "Fresh", 50.0);
+        productService.save(product);
 
-        Mockito.when(productService.findAll())
-                .thenReturn(List.of(dto));
-
-        mockMvc.perform(get("/api/v1/products"))
+        mockMvc.perform(get("/products")
+                        .header(API_KEY_HEADER, API_KEY_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name")
-                        .value("Cosmic star toy"));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is("Space Tuna")));
     }
 
     @Test
-    @DisplayName("POST /api/v1/products validates input")
-    void createProduct_validationError() throws Exception {
-        ProductDto invalid = new ProductDto(
-                null,
-                "",
-                "",
-                -1.0
-        );
+    @DisplayName("POST /products")
+    void shouldCreateProduct() throws Exception {
+        ProductDto newProduct = new ProductDto(null, "Moon Boots", "Jump high", 150.0);
+        String jsonRequest = objectMapper.writeValueAsString(newProduct);
 
-        mockMvc.perform(post("/api/v1/products")
+        mockMvc.perform(post("/products")
+                        .header(API_KEY_HEADER, API_KEY_VALUE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalid)))
-                .andExpect(status().isBadRequest());
+                        .content(jsonRequest))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name", is("Moon Boots")))
+                .andExpect(jsonPath("$.id").exists());
+    }
+
+    @Test
+    @DisplayName("DELETE /products/{id}")
+    void shouldDeleteProduct() throws Exception {
+        ProductDto saved = productService.save(new ProductDto(null, "Old Rocket", "Rusty", 10.0));
+
+        mockMvc.perform(delete("/products/" + saved.getId())
+                        .header(API_KEY_HEADER, API_KEY_VALUE))
+                .andExpect(status().isNoContent());
     }
 }

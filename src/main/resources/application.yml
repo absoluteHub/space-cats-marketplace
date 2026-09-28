@@ -22,3 +22,6 @@ feature:
     cosmoCats: true
     kittyProducts: false
     spring:
+app:
+  security:
+    api-key: "meow-secret-key-123"

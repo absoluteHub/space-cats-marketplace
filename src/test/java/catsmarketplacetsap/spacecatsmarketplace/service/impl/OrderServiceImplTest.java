@@ -8,6 +8,7 @@ import catsmarketplacetsap.spacecatsmarketplace.service.ProductService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @DisplayName("Order Service Integration Test")
+@WithMockUser(username = "admin", roles = {"ADMIN"})
 class OrderServiceImplTest extends AbstractIntegrationTest {
 
     @Autowired
