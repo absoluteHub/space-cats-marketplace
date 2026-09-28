@@ -1,0 +1,16 @@
+package catsmarketplacetsap.spacecatsmarketplace.config;
+
+import catsmarketplacetsap.spacecatsmarketplace.mapper.ProductMapper;
+import org.mapstruct.factory.Mappers;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+
+
+@TestConfiguration
+public class MapperTestConfig {
+
+    @Bean
+    public ProductMapper productMapper() {
+        return Mappers.getMapper(ProductMapper.class);
+    }
+}

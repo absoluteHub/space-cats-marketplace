@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Cart {
 
-    private Long id;
-    private List<Product> items;
-    private Double totalPrice;
+     Long id;
+     List<Product> items;
+     Double totalPrice;
 }
