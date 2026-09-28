@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 public class Category {
 
-    private Long id;
-    private String name;
-    private String cosmicTag;
+     Long id;
+     String name;
+     String cosmicTag;
 }

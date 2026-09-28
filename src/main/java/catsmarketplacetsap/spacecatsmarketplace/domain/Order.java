@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Order {
 
-    private Long id;
-    private LocalDateTime createdAt;
-    private List<Product> products;
+     Long id;
+     LocalDateTime createdAt;
+     List<Product> products;
 }

@@ -1,12 +1,13 @@
 package catsmarketplacetsap.spacecatsmarketplace.service.impl;
 
-import catsmarketplacetsap.spacecatsmarketplace.domain.Product;
 import catsmarketplacetsap.spacecatsmarketplace.dto.ProductDto;
 import catsmarketplacetsap.spacecatsmarketplace.mapper.ProductMapper;
 import catsmarketplacetsap.spacecatsmarketplace.repository.ProductRepository;
+import catsmarketplacetsap.spacecatsmarketplace.repository.entity.ProductEntity;
 import catsmarketplacetsap.spacecatsmarketplace.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper mapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductDto> findAll() {
         return productRepository.findAll().stream()
                 .map(mapper::toDto)
@@ -25,38 +27,41 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDto findById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        return mapper.toDto(product);
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        return mapper.toDto(entity);
     }
 
     @Override
+    @Transactional
     public ProductDto save(ProductDto productDto) {
-        Product product = mapper.toEntity(productDto);
-        productRepository.save(product);
-        return mapper.toDto(product);
+        ProductEntity entity = mapper.toEntity(productDto);
+        ProductEntity savedEntity = productRepository.save(entity);
+        return mapper.toDto(savedEntity);
     }
 
     @Override
+    @Transactional
     public ProductDto update(Long id, ProductDto productDto) {
-        Product existing = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+        ProductEntity existing = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 
-        Product updated = mapper.toEntity(productDto);
-        updated.setId(id);
+        existing.setName(productDto.getName());
+        existing.setDescription(productDto.getDescription());
+        existing.setPrice(productDto.getPrice());
 
-        productRepository.save(updated);
+        ProductEntity updated = productRepository.save(existing);
         return mapper.toDto(updated);
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
-        if (!productRepository.findById(id).isPresent()) {
-            throw new RuntimeException("Product not found");
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
     }
 }
-
