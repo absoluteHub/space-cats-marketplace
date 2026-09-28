@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: space-cats-marketplace
+  profiles:
+    active: dev
+springdoc:
+  swagger-ui:
+    url: /api-specs/product-api-specs.yml
